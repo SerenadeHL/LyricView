@@ -2,7 +2,6 @@ package com.serenade.lyricview.utils;
 
 import android.text.Html;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.serenade.lyricview.bean.Song;
 
@@ -30,7 +29,6 @@ public class Parser {
                     object = array.getJSONObject(i);
                     Song song = new Song();
                     song.setM4a(object.getString("m4a"));
-                    Log.e("media_mid:", object.getString("media_mid"));
                     song.setMedia_mid(object.getString("media_mid"));
                     song.setSongid(object.getString("songid"));
                     song.setSingerid(object.getString("singerid"));
@@ -46,7 +44,6 @@ public class Parser {
                     song.setAlbumid(object.getString("albumid"));
                     data.add(song);
                 }
-
             } catch (Exception e) {
                 e.printStackTrace();
             }

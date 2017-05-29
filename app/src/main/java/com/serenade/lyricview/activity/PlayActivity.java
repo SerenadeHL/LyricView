@@ -8,6 +8,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Window;
 
 import com.serenade.lyricview.utils.HttpUtils;
@@ -35,7 +36,9 @@ public class PlayActivity extends AppCompatActivity {
             public void run() {
                 String json = HttpUtils.getString(url);
                 String lyric = Parser.parseLyric(json);
+                Log.e("lyric=====","="+lyric);
                 lyric_view.setLyric(lyric);
+                lyric_view.start();
             }
         }).start();
 
@@ -71,7 +74,6 @@ public class PlayActivity extends AppCompatActivity {
             int duration = bundle.getInt("duration");
             lyric_view.setDuration(duration);
             lyric_view.setCurrentPosition(current_position);
-            lyric_view.start();
         }
     }
 }
