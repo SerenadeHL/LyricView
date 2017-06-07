@@ -38,7 +38,6 @@ public class PlayActivity extends AppCompatActivity {
                 String lyric = Parser.parseLyric(json);
                 Log.e("lyric=====","="+lyric);
                 lyric_view.setLyric(lyric);
-                lyric_view.start();
             }
         }).start();
 
@@ -72,8 +71,10 @@ public class PlayActivity extends AppCompatActivity {
             Bundle bundle = intent.getExtras();
             int current_position = bundle.getInt("current_position");
             int duration = bundle.getInt("duration");
+            Log.e("duration=",""+duration);
             lyric_view.setDuration(duration);
             lyric_view.setCurrentPosition(current_position);
+            lyric_view.start();
         }
     }
 }

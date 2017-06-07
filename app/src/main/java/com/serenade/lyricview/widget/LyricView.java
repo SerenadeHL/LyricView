@@ -17,6 +17,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -61,16 +62,16 @@ public class LyricView extends View implements GestureDetector.OnGestureListener
     private int mCurrentLineIndex = 0;//当前播放行索引
     private int mNewLineIndex = 0;//当前播放行下一行索引
 
-    private boolean mDragging = false;//是否拖动中
+    private boolean isDragging = false;//是否拖动中
     private GestureDetector mGestureDetector;//手势监听
     private float mSpeed = 4;//拖动歌词速度
     private float mPartOfFling = 0;//滑动距离除以拖动歌词速度
-    private boolean mFlinging = false;//是否处于滑动中
+    private boolean isFlinging = false;//是否处于滑动中
     private ValueAnimator mFlingAnimator;//滑动动画
     private float mDraggedOffset = 0;//拖动完成后中心与歌词行中心差值
     private float mDragged = 0;//拖动歌词的距离
     private int mDraggedLine = 0;//拖动后歌词处于的位置
-    private boolean mHasMessage = false;//按下屏幕时记录是否有回滚到当前播放位置任务
+    private boolean hasMessage = false;//按下屏幕时记录是否有回滚到当前播放位置任务
     private int mClearTime = 2000;//拖动操作完成后返回播放位置的时间间隔
     private int mBackTime = 1000;//拖动操作完成后返回播放位置的动画时间
     private float mIndicatorRadius = 0;//指示器半径
@@ -89,7 +90,7 @@ public class LyricView extends View implements GestureDetector.OnGestureListener
 
     private Handler mHandler;//歌词滚动Handler
     private int mRefreshTime = 400;//歌词检索刷新频率
-    private boolean mChanged = true;//用来记录是否是否换行
+    private boolean isChanged = true;//用来记录是否是否换行
 
     private float mDrawingStartY = 0;//开始绘制歌词Y轴位置
     private float mOffset = 0;//歌词滚动过的位置
@@ -129,17 +130,16 @@ public class LyricView extends View implements GestureDetector.OnGestureListener
                     case REFRESH:
                         mCurrentPosition += mRefreshTime;
                         measureCurrentLine();
-                        if (mNewLineIndex != mCurrentLineIndex && mChanged && !mDragging && mDragged == 0) {
+                        if (mNewLineIndex != mCurrentLineIndex && isChanged && !isDragging && mDragged == 0) {
                             smoothScrollTo(mLines.get(mCurrentLineIndex).getMiddle(), mLines.get(mNewLineIndex).getMiddle());
-                            mChanged = false;
+                            isChanged = false;
                         }
+                        Log.e("mCurrentPosition=",""+mCurrentPosition);
                         if (mCurrentPosition <= mDuration)
                             sendEmptyMessageDelayed(REFRESH, mRefreshTime);
                         break;
                     case CLEAR_DRAGGED:
                         backToPlayingLine(mDragged, 0);
-//                        mDragged = 0;
-//                        reDraw();
                         break;
                 }
             }
@@ -440,7 +440,7 @@ public class LyricView extends View implements GestureDetector.OnGestureListener
             public void onAnimationEnd(Animator animation) {
                 mCurrentLineIndex = mNewLineIndex;
                 mOffset = 0;
-                mChanged = true;
+                isChanged = true;
                 reDraw();
             }
         });
@@ -472,7 +472,7 @@ public class LyricView extends View implements GestureDetector.OnGestureListener
             @Override
             public void onAnimationEnd(Animator animation) {
                 mOffset = 0;
-                mChanged = true;
+                isChanged = true;
                 reDraw();
             }
         });
@@ -592,6 +592,7 @@ public class LyricView extends View implements GestureDetector.OnGestureListener
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        Log.e("mCurrentLineIndex=",""+mCurrentLineIndex);
         if (mLines != null) {
             //设置指示器画笔
             setIndicatorPaint();
@@ -601,7 +602,7 @@ public class LyricView extends View implements GestureDetector.OnGestureListener
                 mIndicatorCenterY = mViewHeight / 2;
             }
 
-            if (mDragging || mDragged != 0) {
+            if (isDragging || mDragged != 0) {
                 //绘制圆
                 mPaint.setStyle(Paint.Style.STROKE);
                 canvas.drawCircle(mIndicatorCenterX,
@@ -706,12 +707,12 @@ public class LyricView extends View implements GestureDetector.OnGestureListener
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN://手指按下，显示指示器
-                mDragging = true;
+                isDragging = true;
                 if (mFlingAnimator != null)
                     mFlingAnimator.cancel();
                 //手指触摸屏幕，取消上一次的返回播放位置延迟任务
-                mHasMessage = mHandler.hasMessages(CLEAR_DRAGGED);
-                if (mHasMessage)
+                hasMessage = mHandler.hasMessages(CLEAR_DRAGGED);
+                if (hasMessage)
                     mHandler.removeMessages(CLEAR_DRAGGED);
                 reDraw();
                 break;
@@ -719,9 +720,9 @@ public class LyricView extends View implements GestureDetector.OnGestureListener
 
                 break;
             case MotionEvent.ACTION_UP://手指抬起，隐藏指示器
-                if (mHasMessage)
+                if (hasMessage)
                     mHandler.sendEmptyMessageDelayed(CLEAR_DRAGGED, mClearTime);
-                mDragging = false;
+                isDragging = false;
 //                mDragged = 0;
                 reDraw();
                 break;
